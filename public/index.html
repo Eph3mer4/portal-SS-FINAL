@@ -664,30 +664,30 @@ Usuario descargó System Informer`;
             console.log('🗑️ Logs limpiados');
         }
     }
-
-    document.getElementById('passwordInput').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            login();
-        }
-    });
-
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            hideAdminPanel();
-        }
-    });
-
-    window.onload = function() {
-        document.getElementById('passwordInput').focus();
-    };
-
-    setInterval(() => {
-        const visits = document.getElementById('totalVisits');
-        if (visits && Math.random() > 0.7) {
-            visits.textContent = parseInt(visits.textContent) + 1;
-        }
-    }, 30000);
+window.onload = function () {
+    document.getElementById('passwordInput').focus();
     document.getElementById('loginButton').addEventListener('click', login);
+};
+
+document.getElementById('passwordInput').addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+        login();
+    }
+});
+
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+        hideAdminPanel();
+    }
+});
+
+setInterval(() => {
+    const visits = document.getElementById('totalVisits');
+    if (visits && Math.random() > 0.7) {
+        visits.textContent = parseInt(visits.textContent) + 1;
+    }
+}, 30000);
+
 </script>
 </body>
 </html>
