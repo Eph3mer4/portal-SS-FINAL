@@ -526,20 +526,25 @@
     </div>
 
     <script>
-        const MAIN_PASSWORD = "123";
-        const ADMIN_PASSWORD = "124";
+    let sessionStartTime = null;
 
-        let sessionStartTime = null;
+    async function login() {
+        const password = document.getElementById('passwordInput').value;
+        const errorMessage = document.getElementById('errorMessage');
 
-        function login() {
-            const password = document.getElementById('passwordInput').value;
-            const errorMessage = document.getElementById('errorMessage');
+        try {
+            const res = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password })
+            });
 
-            if (password === MAIN_PASSWORD) {
+            const data = await res.json();
+
+            if (res.ok) {
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('mainContent').style.display = 'block';
                 errorMessage.style.display = 'none';
-                
                 sessionStartTime = new Date();
                 logAccess();
             } else {
@@ -549,73 +554,75 @@
                     errorMessage.style.display = 'none';
                 }, 3000);
             }
+        } catch (error) {
+            console.error('Error en la autenticación:', error);
         }
+    }
 
-        function logout() {
-            document.getElementById('mainContent').style.display = 'none';
-            document.getElementById('loginScreen').style.display = 'flex';
-            document.getElementById('passwordInput').value = '';
-            hideAdminPanel();
-        }
+    function logout() {
+        document.getElementById('mainContent').style.display = 'none';
+        document.getElementById('loginScreen').style.display = 'flex';
+        document.getElementById('passwordInput').value = '';
+        hideAdminPanel();
+    }
 
-        function logAccess() {
-            const accessData = {
-                timestamp: sessionStartTime,
-                userAgent: navigator.userAgent,
-                action: 'login'
-            };
-            
-            console.log('📊 Datos de acceso:', accessData);
-        }
+    function logAccess() {
+        const accessData = {
+            timestamp: sessionStartTime,
+            userAgent: navigator.userAgent,
+            action: 'login'
+        };
+        console.log('📊 Datos de acceso:', accessData);
+    }
 
-        function downloadFile(toolName) {
-            const downloads = {
-                'everything': 'https://www.voidtools.com/Everything-1.4.1.1027.x64-Setup.exe',
-                'systeminformer': 'https://sourceforge.net/projects/systeminformer/',
-                'hashmyfiles': 'https://www.nirsoft.net/utils/hashmyfiles.zip',
-                'userassist': 'https://www.nirsoft.net/utils/userassistview.zip',
-                'usbdeview': 'https://www.nirsoft.net/utils/usbdeview.zip',
-                'loadeddll': 'https://www.nirsoft.net/utils/loadeddllsview-x64.zip',
-                'recovery': 'https://www.nirsoft.net/utils/previousfilesrecovery-x64.zip',
-            };
+    // Mantengo estas funciones porque no requieren cambio por ahora
+    function downloadFile(toolName) {
+        const downloads = {
+            'everything': 'https://www.voidtools.com/Everything-1.4.1.1027.x64-Setup.exe',
+            'systeminformer': 'https://sourceforge.net/projects/systeminformer/',
+            'hashmyfiles': 'https://www.nirsoft.net/utils/hashmyfiles.zip',
+            'userassist': 'https://www.nirsoft.net/utils/userassistview.zip',
+            'usbdeview': 'https://www.nirsoft.net/utils/usbdeview.zip',
+            'loadeddll': 'https://www.nirsoft.net/utils/loadeddllsview-x64.zip',
+            'recovery': 'https://www.nirsoft.net/utils/previousfilesrecovery-x64.zip',
+        };
 
-            const url = downloads[toolName];
-            if (url) {
-                if (url.startsWith('data:')) {
-                    const link = document.createElement('a');
-                    link.href = url;
-                    link.download = 'guia_analisis_forense.txt';
-                    link.click();
-                } else {
-                    window.open(url, '_blank');
-                }
-                
-                console.log(`📥 Descarga iniciada: ${toolName}`);
-                
-                const downloadCounter = document.getElementById('totalDownloads');
-                if (downloadCounter) {
-                    const current = parseInt(downloadCounter.textContent);
-                    downloadCounter.textContent = current + 1;
-                }
+        const url = downloads[toolName];
+        if (url) {
+            if (url.startsWith('data:')) {
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'guia_analisis_forense.txt';
+                link.click();
+            } else {
+                window.open(url, '_blank');
+            }
+
+            console.log(`📥 Descarga iniciada: ${toolName}`);
+
+            const downloadCounter = document.getElementById('totalDownloads');
+            if (downloadCounter) {
+                const current = parseInt(downloadCounter.textContent);
+                downloadCounter.textContent = current + 1;
             }
         }
+    }
 
-        function showAdminPanel() {
-            const password = prompt('Ingresa la contraseña de administrador:');
-            if (password === ADMIN_PASSWORD) {
-                document.getElementById('adminPanel').style.display = 'block';
-                console.log('🔧 Panel admin accedido');
-            } else if (password !== null) {
-                alert('❌ Contraseña de administrador incorrecta');
-            }
+    function showAdminPanel() {
+        const password = prompt('Ingresa la contraseña de administrador:');
+        alert('⚠️ Función aún no conectada al backend. Implementa validación segura si quieres proteger el panel.');
+        if (password === '124') { // Puedes eliminar esto si migras también el panel al backend
+            document.getElementById('adminPanel').style.display = 'block';
+            console.log('🔧 Panel admin accedido');
         }
+    }
 
-        function hideAdminPanel() {
-            document.getElementById('adminPanel').style.display = 'none';
-        }
+    function hideAdminPanel() {
+        document.getElementById('adminPanel').style.display = 'none';
+    }
 
-        function exportLogs() {
-            const logs = `Logs 
+    function exportLogs() {
+        const logs = `Logs 
 Generado: ${new Date().toLocaleString('es-ES')}
 Inicio de sesión: ${sessionStartTime ? sessionStartTime.toLocaleString('es-ES') : 'N/A'}
 
@@ -625,43 +632,43 @@ Usuario accedió al portal
 Usuario descargó HashMyFiles
 Usuario descargó System Informer`;
 
-            const link = document.createElement('a');
-            link.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(logs);
-            link.download = 'logsDESCONFIGURADOS.txt';
-            link.click();
-            
-            console.log('📊 Logs exportados');
+        const link = document.createElement('a');
+        link.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(logs);
+        link.download = 'logsDESCONFIGURADOS.txt';
+        link.click();
+
+        console.log('📊 Logs exportados');
+    }
+
+    function clearLogs() {
+        if (confirm('¿Estás seguro de que quieres limpiar todos los logs?')) {
+            alert('✅ Logs limpiados correctamente');
+            console.log('🗑️ Logs limpiados');
         }
+    }
 
-        function clearLogs() {
-            if (confirm('¿Estás seguro de que quieres limpiar todos los logs?')) {
-                alert('✅ Logs limpiados correctamente');
-                console.log('🗑️ Logs limpiados');
-            }
+    document.getElementById('passwordInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            login();
         }
+    });
 
-        document.getElementById('passwordInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                login();
-            }
-        });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            hideAdminPanel();
+        }
+    });
 
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                hideAdminPanel();
-            }
-        });
+    window.onload = function() {
+        document.getElementById('passwordInput').focus();
+    };
 
-        window.onload = function() {
-            document.getElementById('passwordInput').focus();
-        };
-
-        setInterval(() => {
-            const visits = document.getElementById('totalVisits');
-            if (visits && Math.random() > 0.7) {
-                visits.textContent = parseInt(visits.textContent) + 1;
-            }
-        }, 30000);
-    </script>
+    setInterval(() => {
+        const visits = document.getElementById('totalVisits');
+        if (visits && Math.random() > 0.7) {
+            visits.textContent = parseInt(visits.textContent) + 1;
+        }
+    }, 30000);
+</script>
 </body>
 </html>
