@@ -392,7 +392,7 @@
                 <label class="input-label pixel-font">Contraseña de Acceso:</label>
                 <input type="password" id="passwordInput" class="minecraft-input" placeholder="Ingresa la clave secreta">
             </div>
-            <button onclick="login()" class="minecraft-btn">Ingresar</button>
+            <button id="loginButton" class="minecraft-btn">Ingresar</button>
             <div id="errorMessage" class="error-message pixel-font">❌ Contraseña incorrecta</div>
         </div>
     </div>
@@ -687,7 +687,7 @@ Usuario descargó System Informer`;
             visits.textContent = parseInt(visits.textContent) + 1;
         }
     }, 30000);
-    window.login = login;
+    document.getElementById('loginButton').addEventListener('click', login);
 </script>
 </body>
 </html>
