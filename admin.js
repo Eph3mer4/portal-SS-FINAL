@@ -1,14 +1,14 @@
 export default function handler(req, res) {
+  const { password } = req.body;
+  const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "adminBLURKIT22"; // Cambia esto
+
   if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Método no permitido' });
+    return res.status(405).json({ error: 'Método no permitido' });
   }
 
-  const { password } = req.body;
-  const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
-
   if (password === ADMIN_PASSWORD) {
-    return res.status(200).json({ message: 'Acceso admin concedido' });
+    return res.status(200).json({ access: true });
   } else {
-    return res.status(401).json({ message: 'Contraseña admin incorrecta' });
+    return res.status(401).json({ error: 'Contraseña incorrecta' });
   }
 }
