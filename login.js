@@ -1,15 +1,32 @@
-export default function handler(req, res) {
-  const { password } = req.body;
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ message: 'Método no permitido' });
+  }
 
-  const PASSWORD_SECRETA = process.env.PASSWORD_SECRETA;
+  try {
+    const { password } = req.body;
 
-  if (req.method === 'POST') {
-    if (password === PASSWORD_SECRETA) {
-      res.status(200).json({ message: 'Contraseña correcta. Acceso concedido.' });
-    } else {
-      res.status(401).json({ message: 'Contraseña incorrecta. Acceso denegado.' });
+    // Si req.body está vacío, intenta forzar el parseo manual (por si Vercel no lo hace):
+    if (!password) {
+      const body = await new Promise((resolve, reject) => {
+        let data = '';
+        req.on('data', chunk => data += chunk);
+        req.on('end', () => resolve(JSON.parse(data)));
+        req.on('error', err => reject(err));
+      });
+      password = body.password;
     }
-  } else {
-    res.status(405).json({ message: 'Método no permitido' });
+
+    const PASSWORD_SECRETA = process.env.PASSWORD_SECRETA;
+
+    if (password === PASSWORD_SECRETA) {
+      return res.status(200).json({ message: 'Acceso concedido' });
+    } else {
+      return res.status(401).json({ message: 'Contraseña incorrecta' });
+    }
+
+  } catch (error) {
+    console.error('Error en login:', error);
+    return res.status(500).json({ message: 'Error interno del servidor' });
   }
 }
