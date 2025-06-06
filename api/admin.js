@@ -1,32 +1,55 @@
-export default async function handler(req, res) {
+// api/admin.js
+export default function handler(req, res) {
+  // 1. Configuración básica de seguridad
   if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Método no permitido' });
+    return res.status(405).json({ 
+      success: false,
+      message: 'Método no permitido' 
+    });
   }
 
+  // 2. Obtener la contraseña del cuerpo de la solicitud
+  const { password } = req.body;
+
+  // 3. Obtener la contraseña de administrador de las variables de entorno
+  // (Configura esto en Vercel: Settings -> Environment Variables)
+  const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+
+  // 4. Verificación básica
+  if (!ADMIN_PASSWORD) {
+    console.error('ADMIN_PASSWORD no está configurado en las variables de entorno');
+    return res.status(500).json({
+      success: false,
+      message: 'Configuración del servidor incompleta'
+    });
+  }
+
+  // 5. Validar la contraseña
   try {
-    const { password } = req.body;
-
-    // Si req.body está vacío, intenta forzar el parseo manual (por si Vercel no lo hace):
-    if (!password) {
-      const body = await new Promise((resolve, reject) => {
-        let data = '';
-        req.on('data', chunk => data += chunk);
-        req.on('end', () => resolve(JSON.parse(data)));
-        req.on('error', err => reject(err));
+    if (password === ADMIN_PASSWORD) {
+      // 6. Respuesta exitosa
+      return res.status(200).json({
+        success: true,
+        message: 'Autenticación exitosa',
+        // Datos adicionales que podrías querer enviar al frontend
+        adminData: {
+          accessLevel: 'full',
+          lastLogin: new Date().toISOString()
+        }
       });
-      password = body.password;
-    }
-
-    const PASSWORD_SECRETA = process.env.PASSWORD_SECRETA;
-
-    if (password === PASSWORD_SECRETA) {
-      return res.status(200).json({ message: 'Acceso concedido' });
     } else {
-      return res.status(401).json({ message: 'Contraseña incorrecta' });
+      // 7. Contraseña incorrecta
+      return res.status(401).json({
+        success: false,
+        message: 'Credenciales inválidas'
+      });
     }
-
   } catch (error) {
-    console.error('Error en login:', error);
-    return res.status(500).json({ message: 'Error interno del servidor' });
+    // 8. Manejo de errores
+    console.error('Error en el endpoint /api/admin:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor'
+    });
   }
 }
