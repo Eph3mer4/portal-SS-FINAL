@@ -575,7 +575,7 @@
         console.log('📊 Datos de acceso:', accessData);
     }
 
-    // Mantengo estas funciones porque no requieren cambio por ahora
+    
     function downloadFile(toolName) {
         const downloads = {
             'everything': 'https://www.voidtools.com/Everything-1.4.1.1027.x64-Setup.exe',
@@ -608,12 +608,30 @@
         }
     }
 
-    function showAdminPanel() {
-        const password = prompt('Ingresa la contraseña de administrador:');
-        alert('⚠️ Función aún no conectada al backend. Implementa validación segura si quieres proteger el panel.');
-        if (password === '124') { // Puedes eliminar esto si migras también el panel al backend
+ async function showAdminPanel() {
+    const password = prompt('Ingresa la contraseña de administrador:');
+    if (!password) return;
+
+    try {
+        const res = await fetch('/api/admin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
             document.getElementById('adminPanel').style.display = 'block';
             console.log('🔧 Panel admin accedido');
+        } else {
+            alert('❌ Contraseña de administrador incorrecta');
+        }
+    } catch (error) {
+        console.error('Error al validar administrador:', error);
+        alert('⚠️ Error al conectar con el servidor.');
+    }
+}
         }
     }
 
